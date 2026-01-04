@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>morrisJAM26</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23000' width='100' height='100'/><text y='70' x='50' text-anchor='middle' fill='%2300ff00' font-size='60' font-family='monospace'>M</text></svg>">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @font-face {
+            font-family: 'Pixel Bit Advanced';
+            src: url(fonts/pixel-bit-advanced.ttf);
+        }
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .logo-container {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 60px 80px;
+            font-family: 'Pixel Bit Advanced', monospace;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .main-text {
+            font-size: 72px;
+            color: #00ff88;
+            text-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88, 0 0 30px #00ff88;
+            letter-spacing: 4px;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .sub-text {
+            font-size: 48px;
+            color: #ff6b6b;
+            text-shadow: 0 0 10px #ff6b6b, 0 0 20px #ff6b6b;
+            margin-top: 10px;
+            line-height: 1;
+            text-align: right;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: #000;
+            color: #00ff00;
+            min-height: 100vh;
+            padding: 20px;
+            font-size: 20px;
+            line-height: 1.4;
+        }
+        
+        .crt::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            border: 3px solid #00ff00;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            background: rgba(0, 255, 0, 0.05);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        
+        .timer {
+            font-size: 36px;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            margin: 15px 0;
+            letter-spacing: 3px;
+        }
+        
+        .timer.warning {
+            color: #ffff00;
+            text-shadow: 0 0 10px #ffff00;
+            animation: blink 1s infinite;
+        }
+        
+        .timer.danger {
+            color: #ff0000;
+            text-shadow: 0 0 10px #ff0000;
+            animation: blink 0.5s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0.3; }
+        }
+        
+        h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ff00;
+            letter-spacing: 2px;
+        }
+        
+        .section {
+            border: 3px solid #00ff00;
+            padding: 25px;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+        
+        .section-title {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00ff00;
+            font-size: 22px;
+        }
+        
+        input[type="text"],
+        input[type="file"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            background: #000;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .btn {
+            background: #000;
+            color: #00ff00;
+            border: 3px solid #00ff00;
+            padding: 15px 40px;
+            font-size: 24px;
+            font-family: 'VT323', monospace;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            width: 100%;
+        }
+        
+        .btn:hover:not(:disabled) {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .alert {
+            padding: 20px;
+            border: 3px solid;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+        
+        .alert-success {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        
+        .alert-error {
+            border-color: #ff0000;
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff0000;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+        }
+        
+        .submission-id {
+            font-size: 36px;
+            color: #00ff00;
+            text-align: center;
+            margin: 20px 0;
+            letter-spacing: 4px;
+            text-shadow: 0 0 15px #00ff00;
+            animation: glow 2s ease-in-out infinite;
+            word-break: break-all;
+        }
+        
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 10px #00ff00; }
+            50% { text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00; }
+        }
+        
+        .info-box {
+            border: 2px solid #00ff00;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: rgba(0, 255, 0, 0.05);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            font-size: 24px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1 1 150px;
+        }
+        
+        .stat-value {
+            font-size: 42px;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.3) 51%);
+            background-size: 100% 4px;
+            z-index: 3;
+            pointer-events: none;
+        }
+        
+        .hidden {
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #000;
+            border: 2px solid #00ff00;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #00ff00;
+            width: 0%;
+            transition: width 0.3s;
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #00ff00;
+            text-shadow: 0 0 5px #000;
+            font-size: 18px;
+        }
+
+        @media screen and (max-width: 768px) {
+            body { padding: 10px; font-size: 18px; }
+            .logo-container { padding: 30px 40px; }
+            .main-text { font-size: 48px; letter-spacing: 2px; }
+            .sub-text { font-size: 32px; }
+            h1 { font-size: 32px; }
+            .timer { font-size: 28px; }
+            .section { padding: 15px; border: 2px solid #00ff00; }
+            .section-title { font-size: 26px; }
+        }
+    </style>
+</head>
+<body class="crt">
+    <div class="scanline"></div>
+    <div class="container">
+        <div class="header">
+            <div>
+                <div class="logo-container">
+                    <div class="main-text">morrisJAM</div>
+                    <div class="sub-text">26</div>
+                </div>
+            </div>
+            <h1>CONCOURS DE PROGRAMMATION</h1>
+            
+            <div style="font-size: 22px; margin: 10px 0;">DATE LIMITE: 18 JANVIER 2026 - 00:00</div>
+            <div class="timer" id="countdown">CHARGEMENT...</div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="participantCount">0</div>
+                    <div>PARTICIPANTS</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="submissionCount">0</div>
+                    <div>SOUMISSIONS</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="alertContainer"></div>
+        
+        <div id="mainContent">
+            <!-- SECTION 1: Enregistrement -->
+            <div class="section">
+                <div class="section-title">[SECTION 1] ENREGISTREMENT</div>
+                <div class="info-box">
+                    > Entrez vos informations pour recevoir un identifiant anonyme<br>
+                    > Cet identifiant sera utilise pour soumettre votre projet<br>
+                    > Si vous etes deja enregistre, re-entrez vos infos pour recuperer votre ID
+                </div>
+                
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="participant_name">> NOM COMPLET / EQUIPE:</label>
+                        <input type="text" id="participant_name" name="name" required autocomplete="name" placeholder="Ex: Jean Tremblay">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="student_id">> NUMERO D'ETUDIANT:</label>
+                        <input type="text" id="student_id" name="student_id" required autocomplete="off" placeholder="Ex: 123456">
+                    </div>
+                    
+                    <button type="submit" class="btn">[ OBTENIR MON ID ANONYME ]</button>
+                </form>
+            </div>
+            
+            <!-- SECTION 2: Soumission anonyme -->
+            <div class="section">
+                <div class="section-title">[SECTION 2] SOUMISSION ANONYME</div>
+                <div class="info-box">
+                    > Utilisez votre identifiant anonyme pour soumettre votre projet<br>
+                    > Format requis: Fichier ZIP contenant (Code + Executable + README)<br>
+                    > Vous pouvez soumettre plusieurs fois - seule la derniere sera evaluee
+                </div>
+                
+                <form id="submitForm">
+                    <div class="form-group">
+                        <label for="anonymous_id">> IDENTIFIANT ANONYME:</label>
+                        <input type="text" id="anonymous_id" name="anonymous_id" required autocomplete="off" placeholder="Ex: P1234" pattern="P[0-9]{4}" title="Format: P suivi de 4 chiffres">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="zip_file">> FICHIER ZIP DU PROJET (max 500MB):</label>
+                        <input type="file" id="zip_file" name="zip_file" accept=".zip" required>
+                    </div>
+                    
+                    <div id="uploadProgress" class="hidden">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                            <div class="progress-text" id="progressText">0%</div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn" id="submitBtn">[ SOUMETTRE MON PROJET ]</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // REPLACE THESE WITH YOUR SUPABASE CREDENTIALS
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const deadline = new Date('2026-01-18T00:00:00').getTime();
+        const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
+        
+        // Countdown timer
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = deadline - now;
+            
+            if (distance < 0) {
+                document.getElementById('countdown').innerHTML = 'TEMPS ECOULE';
+                document.getElementById('countdown').className = 'timer danger';
+                document.getElementById('mainContent').innerHTML = '<div class="alert alert-error"><strong>[SYSTEME FERME]</strong><br>La date limite est depassee.</div>';
+                return;
+            }
+            
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            const countdownEl = document.getElementById('countdown');
+            countdownEl.innerHTML = 
+                String(days).padStart(2, '0') + 'J : ' +
+                String(hours).padStart(2, '0') + 'H : ' + 
+                String(minutes).padStart(2, '0') + 'M : ' + 
+                String(seconds).padStart(2, '0') + 'S';
+            
+            if (days < 1) {
+                countdownEl.className = 'timer danger';
+            } else if (days < 3) {
+                countdownEl.className = 'timer warning';
+            } else {
+                countdownEl.className = 'timer';
+            }
+        }
+        
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+        
+        // Load stats
+        async function loadStats() {
+            const { count: participantCount } = await supabase
+                .from('participants')
+                .select('*', { count: 'exact', head: true });
+            
+            const { count: submissionCount } = await supabase
+                .from('submissions')
+                .select('*', { count: 'exact', head: true })
+                .eq('is_latest', true);
+            
+            document.getElementById('participantCount').textContent = participantCount || 0;
+            document.getElementById('submissionCount').textContent = submissionCount || 0;
+        }
+        
+        loadStats();
+        
+        // Show alert
+        function showAlert(message, type = 'success', extraContent = '') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `<strong>${message}</strong>${extraContent}`;
+            document.getElementById('alertContainer').innerHTML = '';
+            document.getElementById('alertContainer').appendChild(alertDiv);
+            window.scrollTo(0, 0);
+        }
+        
+        // Generate anonymous ID
+        function generateAnonymousId() {
+            return 'P' + String(Math.floor(Math.random() * 9000) + 1000);
+        }
+        
+        // Register form
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.disabled = true;
+            btn.textContent = '[ TRAITEMENT EN COURS... ]';
+            
+            const name = document.getElementById('participant_name').value.trim();
+            const studentId = document.getElementById('student_id').value.trim();
+            
+            // Check if already exists
+            const { data: existing } = await supabase
+                .from('participants')
+                .select('anonymous_id')
+                .eq('student_id', studentId)
+                .single();
+            
+            if (existing) {
+                showAlert(
+                    'PARTICIPANT DEJA ENREGISTRE',
+                    'success',
+                    `<div class="submission-id">${existing.anonymous_id}</div>
+                    <div style="text-align: center; margin-top: 10px;">
+                        [!] CONSERVEZ PRECIEUSEMENT CET IDENTIFIANT [!]<br>
+                        Vous en aurez besoin pour soumettre votre projet.
+                    </div>`
+                );
+            } else {
+                const anonymousId = generateAnonymousId();
+                const { error } = await supabase
+                    .from('participants')
+                    .insert([{
+                        anonymous_id: anonymousId,
+                        name: name,
+                        student_id: studentId
+                    }]);
+                
+                if (error) {
+                    showAlert(`[ERREUR] ${error.message}`, 'error');
+                } else {
+                    showAlert(
+                        'ENREGISTREMENT REUSSI',
+                        'success',
+                        `<div class="submission-id">${anonymousId}</div>
+                        <div style="text-align: center; margin-top: 10px;">
+                            [!] CONSERVEZ PRECIEUSEMENT CET IDENTIFIANT [!]<br>
+                            Vous en aurez besoin pour soumettre votre projet.
+                        </div>`
+                    );
+                    loadStats();
+                }
+            }
+            
+            btn.disabled = false;
+            btn.textContent = '[ OBTENIR MON ID ANONYME ]';
+            e.target.reset();
+        });
+        
+        // Submit form
+        document.getElementById('submitForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const progressDiv = document.getElementById('uploadProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            btn.disabled = true;
+            btn.textContent = '[ TELECHARGEMENT EN COURS... ]';
+            progressDiv.classList.remove('hidden');
+            
+            const anonymousId = document.getElementById('anonymous_id').value.trim();
+            const fileInput = document.getElementById('zip_file');
+            const file = fileInput.files[0];
+            
+            // Validate
+            if (!file) {
+                showAlert('[ERREUR] Veuillez selectionner un fichier.', 'error');
+                btn.disabled = false;
+                btn.textContent = '[ SOUMETTRE MON PROJET ]';
+                progressDiv.classList.add('hidden');
+                return;
+            }
+            
+            if (file.size > MAX_FILE_SIZE) {
+                showAlert('[ERREUR] Fichier trop volumineux (max 500MB).', 'error');
+                btn.disabled = false;
+                btn.textContent = '[ SOUMETTRE MON PROJET ]';
+                progressDiv.classList.add('hidden');
+                return;
+            }
+            
+            // Check if participant exists
+            const { data: participant } = await supabase
+                .from('participants')
+                .select('anonymous_id')
+                .eq('anonymous_id', anonymousId)
+                .single();
+            
+            if (!participant) {
+                showAlert('[ERREUR] Identifiant anonyme invalide.', 'error');
+                btn.disabled = false;
+                btn.textContent = '[ SOUMETTRE MON PROJET ]';
+                progressDiv.classList.add('hidden');
+                return;
+            }
+            
+            // Upload to Supabase Storage
+            const timestamp = Date.now();
+            const fileName = `${anonymousId}_${timestamp}.zip`;
+            
+            const { error: uploadError } = await supabase.storage
+                .from('submissions')
+                .upload(fileName, file, {
+                    onUploadProgress: (progress) => {
+                        const percent = Math.round((progress.loaded / progress.total) * 100);
+                        progressFill.style.width = percent + '%';
+                        progressText.textContent = percent + '%';
+                    }
+                });
+            
+            if (uploadError) {
+                showAlert(`[ERREUR] ${uploadError.message}`, 'error');
+                btn.disabled = false;
+                btn.textContent = '[ SOUMETTRE MON PROJET ]';
+                progressDiv.classList.add('hidden');
+                return;
+            }
+            
+            // Mark old submissions as not latest
+            await supabase
+                .from('submissions')
+                .update({ is_latest: false })
+                .eq('anonymous_id', anonymousId);
+            
+            // Add new submission record
+            const { error: dbError } = await supabase
+                .from('submissions')
+                .insert([{
+                    anonymous_id: anonymousId,
+                    filename: fileName,
+                    file_path: fileName,
+                    is_latest: true
+                }]);
+            
+            if (dbError) {
+                showAlert(`[ERREUR] ${dbError.message}`, 'error');
+            } else {
+                showAlert(
+                    '[OK] SOUMISSION ENREGISTREE AVEC SUCCES',
+                    'success',
+                    '<br>Votre projet a ete recu. Vous pouvez soumettre<br>une nouvelle version a tout moment avant la date limite.'
+                );
+                loadStats();
+            }
+            
+            btn.disabled = false;
+            btn.textContent = '[ SOUMETTRE MON PROJET ]';
+            progressDiv.classList.add('hidden');
+            progressFill.style.width = '0%';
+            progressText.textContent = '0%';
+            e.target.reset();
+        });
+    </script>
+</body>
+</html>
