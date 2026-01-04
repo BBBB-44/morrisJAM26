@@ -317,7 +317,7 @@
             <h1>CONCOURS DE PROGRAMMATION</h1>
             
             <div style="font-size: 22px; margin: 10px 0;">DATE LIMITE: 18 JANVIER 2026 - 00:00</div>
-            <div class="timer" id="countdown">CHARGEMENT...</div>
+            
             
             <div class="stats">
                 <div class="stat-item">
@@ -401,41 +401,9 @@
         const deadline = new Date('2026-01-18T00:00:00').getTime();
         const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
         
-        // Countdown timer
-        function updateCountdown() {
-            const now = new Date().getTime();
-            const distance = deadline - now;
-            
-            if (distance < 0) {
-                document.getElementById('countdown').innerHTML = 'TEMPS ECOULE';
-                document.getElementById('countdown').className = 'timer danger';
-                document.getElementById('mainContent').innerHTML = '<div class="alert alert-error"><strong>[SYSTEME FERME]</strong><br>La date limite est depassee.</div>';
-                return;
-            }
-            
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-            const countdownEl = document.getElementById('countdown');
-            countdownEl.innerHTML = 
-                String(days).padStart(2, '0') + 'J : ' +
-                String(hours).padStart(2, '0') + 'H : ' + 
-                String(minutes).padStart(2, '0') + 'M : ' + 
-                String(seconds).padStart(2, '0') + 'S';
-            
-            if (days < 1) {
-                countdownEl.className = 'timer danger';
-            } else if (days < 3) {
-                countdownEl.className = 'timer warning';
-            } else {
-                countdownEl.className = 'timer';
-            }
-        }
         
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
+        
+       
         
         // Load stats
         async function loadStats() {
