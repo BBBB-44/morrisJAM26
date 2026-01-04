@@ -444,55 +444,83 @@
             btn.disabled = true;
             btn.textContent = '[ TRAITEMENT EN COURS... ]';
             
-            const name = document.getElementById('participant_name').value.trim();
-            const studentId = document.getElementById('student_id').value.trim();
-            
-            // Check if already exists
-            const { data: existing } = await supabase
-                .from('participants')
-                .select('anonymous_id')
-                .eq('student_id', studentId)
-                .single();
-            
-            if (existing) {
-                showAlert(
-                    'PARTICIPANT DEJA ENREGISTRE',
-                    'success',
-                    `<div class="submission-id">${existing.anonymous_id}</div>
-                    <div style="text-align: center; margin-top: 10px;">
-                        [!] CONSERVEZ PRECIEUSEMENT CET IDENTIFIANT [!]<br>
-                        Vous en aurez besoin pour soumettre votre projet.
-                    </div>`
-                );
-            } else {
-                const anonymousId = generateAnonymousId();
-                const { error } = await supabase
-                    .from('participants')
-                    .insert([{
-                        anonymous_id: anonymousId,
-                        name: name,
-                        student_id: studentId
-                    }]);
+            try {
+                const name = document.getElementById('participant_name').value.trim();
+                const studentId = document.getElementById('student_id').value.trim();
                 
-                if (error) {
-                    showAlert(`[ERREUR] ${error.message}`, 'error');
-                } else {
+                if (!name || !studentId) {
+                    showAlert('[ERREUR] Tous les champs sont requis.', 'error');
+                    btn.disabled = false;
+                    btn.textContent = '[ OBTENIR MON ID ANONYME ]';
+                    return;
+                }
+                
+                // Check if already exists
+                const { data: existing, error: selectError } = await supabase
+                    .from('participants')
+                    .select('anonymous_id')
+                    .eq('student_id', studentId);
+                
+                console.log('Check existing:', { existing, selectError });
+                
+                if (selectError) {
+                    console.error('Select error:', selectError);
+                    showAlert(`[ERREUR] ${selectError.message}`, 'error');
+                    btn.disabled = false;
+                    btn.textContent = '[ OBTENIR MON ID ANONYME ]';
+                    return;
+                }
+                
+                if (existing && existing.length > 0) {
                     showAlert(
-                        'ENREGISTREMENT REUSSI',
+                        'PARTICIPANT DEJA ENREGISTRE',
                         'success',
-                        `<div class="submission-id">${anonymousId}</div>
+                        `<div class="submission-id">${existing[0].anonymous_id}</div>
                         <div style="text-align: center; margin-top: 10px;">
                             [!] CONSERVEZ PRECIEUSEMENT CET IDENTIFIANT [!]<br>
                             Vous en aurez besoin pour soumettre votre projet.
                         </div>`
                     );
-                    loadStats();
+                } else {
+                    const anonymousId = generateAnonymousId();
+                    console.log('Attempting to insert:', { anonymousId, name, studentId });
+                    
+                    const { data: insertData, error: insertError } = await supabase
+                        .from('participants')
+                        .insert([{
+                            anonymous_id: anonymousId,
+                            name: name,
+                            student_id: studentId
+                        }])
+                        .select();
+                    
+                    console.log('Insert result:', { insertData, insertError });
+                    
+                    if (insertError) {
+                        console.error('Insert error:', insertError);
+                        showAlert(`[ERREUR] ${insertError.message}`, 'error');
+                    } else {
+                        showAlert(
+                            'ENREGISTREMENT REUSSI',
+                            'success',
+                            `<div class="submission-id">${anonymousId}</div>
+                            <div style="text-align: center; margin-top: 10px;">
+                                [!] CONSERVEZ PRECIEUSEMENT CET IDENTIFIANT [!]<br>
+                                Vous en aurez besoin pour soumettre votre projet.
+                            </div>`
+                        );
+                        loadStats();
+                    }
                 }
+                
+                e.target.reset();
+            } catch (err) {
+                console.error('Unexpected error:', err);
+                showAlert(`[ERREUR] ${err.message}`, 'error');
             }
             
             btn.disabled = false;
             btn.textContent = '[ OBTENIR MON ID ANONYME ]';
-            e.target.reset();
         });
         
         // Submit form
