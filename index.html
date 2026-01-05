@@ -399,11 +399,12 @@
     </div>
     
     <script>
-        // REPLACE THESE WITH YOUR SUPABASE CREDENTIALS
+        import { createClient } from '@supabase/supabase-js'
+    
         const SUPABASE_URL = 'https://zluuszpkksjarqrwlpyv.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_YLy94SHGohAMMZ-8M7rCOw_-b4ig_QW';
         
-        let supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         const deadline = new Date('2026-01-18T00:00:00').getTime();
         const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
